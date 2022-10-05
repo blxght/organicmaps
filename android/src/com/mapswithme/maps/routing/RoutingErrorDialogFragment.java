@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentFactory;
 
 import com.mapswithme.maps.R;
 import com.mapswithme.maps.downloader.CountryItem;
@@ -90,14 +91,14 @@ public class RoutingErrorDialogFragment extends BaseRoutingErrorDialogFragment
       }
     }
 
-    MapManager.warnOn3g(getActivity(), size, new Runnable()
+    MapManager.warnOn3g(requireActivity(), size, new Runnable()
     {
       @Override
       public void run()
       {
         RoutingMapsDownloadFragment downloader = RoutingMapsDownloadFragment
-            .create(getAppContextOrThrow(), mMapsArray);
-        downloader.show(getActivity().getSupportFragmentManager(), downloader.getClass().getSimpleName());
+            .create(requireActivity().getSupportFragmentManager().getFragmentFactory(), getAppContextOrThrow(), mMapsArray);
+        downloader.show(requireActivity().getSupportFragmentManager(), downloader.getClass().getSimpleName());
 
         mCancelled = false;
         dismiss();
@@ -139,14 +140,14 @@ public class RoutingErrorDialogFragment extends BaseRoutingErrorDialogFragment
     mResultCode = getArguments().getInt(EXTRA_RESULT_CODE);
   }
 
-  public static RoutingErrorDialogFragment create(@NonNull Context context,
+  public static RoutingErrorDialogFragment create(@NonNull FragmentFactory factory, @NonNull Context context,
                                                   int resultCode, @Nullable String[] missingMaps)
   {
     Bundle args = new Bundle();
     args.putInt(EXTRA_RESULT_CODE, resultCode);
     args.putStringArray(EXTRA_MISSING_MAPS, missingMaps);
-    RoutingErrorDialogFragment res = (RoutingErrorDialogFragment) Fragment
-        .instantiate(context, RoutingErrorDialogFragment.class.getName());
+    RoutingErrorDialogFragment res = (RoutingErrorDialogFragment)
+        factory.instantiate(context.getClassLoader(), RoutingErrorDialogFragment.class.getName());
     res.setArguments(args);
     return res;
   }

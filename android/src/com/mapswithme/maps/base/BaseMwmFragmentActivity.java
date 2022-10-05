@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.WindowInsets;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.ColorRes;
@@ -15,6 +16,7 @@ import androidx.annotation.StyleRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentFactory;
 import androidx.fragment.app.FragmentManager;
 import com.mapswithme.maps.MwmApplication;
 import com.mapswithme.maps.R;
@@ -314,7 +316,9 @@ public abstract class BaseMwmFragmentActivity extends AppCompatActivity
     Fragment potentialInstance = getSupportFragmentManager().findFragmentByTag(name);
     if (potentialInstance == null)
     {
-      final Fragment fragment = Fragment.instantiate(this, name, args);
+      final FragmentFactory factory = getSupportFragmentManager().getFragmentFactory();
+      final Fragment fragment = factory.instantiate(getClassLoader(), name);
+      fragment.setArguments(args);
       getSupportFragmentManager().beginTransaction()
                                  .replace(resId, fragment, name)
                                  .commitAllowingStateLoss();

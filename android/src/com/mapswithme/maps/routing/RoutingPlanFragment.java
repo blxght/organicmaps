@@ -24,13 +24,13 @@ public class RoutingPlanFragment extends BaseMwmFragment
   {
     View res = inflater.inflate(R.layout.fragment_routing, container, false);
     RoutingBottomMenuListener listener = null;
-    if (getActivity() instanceof RoutingBottomMenuListener)
-      listener = (RoutingBottomMenuListener) getActivity();
+    if (requireActivity() instanceof RoutingBottomMenuListener)
+      listener = (RoutingBottomMenuListener) requireActivity();
 
 
     RoutingPlanInplaceController.RoutingPlanListener planListener =
         (RoutingPlanInplaceController.RoutingPlanListener) requireActivity();
-    mPlanController = new RoutingPlanController(res, getActivity(), planListener, listener);
+    mPlanController = new RoutingPlanController(res, requireActivity(), planListener, listener);
     return res;
   }
 

@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentFactory;
 
 import com.mapswithme.maps.R;
 import com.mapswithme.util.UiUtils;
@@ -76,7 +77,9 @@ public abstract class BaseToolbarActivity extends BaseMwmFragmentActivity
           "isn't implemented or returns wrong resourceId.");
 
     String name = fragmentClass.getName();
-    final Fragment fragment = Fragment.instantiate(this, name, args);
+    final FragmentFactory factory = getSupportFragmentManager().getFragmentFactory();
+    final Fragment fragment = factory.instantiate(getClassLoader(), name);
+    fragment.setArguments(args);
     getSupportFragmentManager().beginTransaction()
         .replace(resId, fragment, name)
         .addToBackStack(null)

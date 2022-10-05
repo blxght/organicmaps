@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
-    package="com.mapswithme.maps"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto">
 
   <uses-feature
@@ -37,7 +37,6 @@
     the application must request the Manifest.permission.WAKE_LOCK permission.
   //-->
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
-  <uses-permission android:name="android.permission.BATTERY_STATS"/>
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
   <queries>
@@ -61,11 +60,11 @@
       android:label="@string/app_name"
       android:theme="@style/MwmTheme"
       android:supportsRtl="true"
-      android:networkSecurityConfig="@xml/network_security_config">
+      android:networkSecurityConfig="@xml/network_security_config"
+      tools:targetApi="s">
 
     <activity
       android:name="com.mapswithme.maps.SplashActivity"
-      android:label="@string/app_name"
       android:exported="true">
 
       <!-- standard "geo" scheme -->
@@ -586,22 +585,6 @@
 
         <data
           android:scheme="mapsme"/>
-      </intent-filter>
-
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW"/>
-        <category android:name="android.intent.category.DEFAULT"/>
-        <data
-          android:host="*"
-          android:mimeType="application/vnd.google-earth.kmz"/>
-      </intent-filter>
-
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW"/>
-        <category android:name="android.intent.category.DEFAULT"/>
-        <data
-          android:host="*"
-          android:mimeType="application/vnd.google-earth.kml+xml"/>
       </intent-filter>
 
       <intent-filter>
