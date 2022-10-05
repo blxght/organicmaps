@@ -3,25 +3,26 @@ package com.mapswithme.maps.location;
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
+import android.app.Activity;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
+import android.content.IntentSender;
 import android.location.Location;
 import android.location.LocationManager;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import com.mapswithme.maps.Framework;
-import com.mapswithme.maps.MapFragment;
 import com.mapswithme.maps.MwmApplication;
 import com.mapswithme.maps.R;
 import com.mapswithme.maps.background.AppBackgroundTracker;
@@ -88,7 +89,9 @@ public enum LocationHelper implements Initializable<Context>, AppBackgroundTrack
   @Nullable
   private Dialog mLocationErrorDialog;
   @Nullable
-  ActivityResultLauncher<String[]> mPermissionRequest;
+  private ActivityResultLauncher<String[]> mPermissionRequest;
+  @Nullable
+  private ActivityResultLauncher<IntentSenderRequest> mResolutionRequest;
 
   @SuppressWarnings("FieldCanBeLocal")
   private final LocationState.ModeChangeListener mMyPositionModeListener =
@@ -308,6 +311,22 @@ public enum LocationHelper implements Initializable<Context>, AppBackgroundTrack
     mSavedLocation = location;
     mMyPosition = null;
     notifyLocationUpdated();
+  }
+
+  @Override
+  @UiThread
+  public void onLocationResolutionRequired(@Nullable PendingIntent pendingIntent)
+  {
+    Logger.d(TAG, "");
+
+    if (mResolutionRequest == null) {
+      onLocationDisabled();
+      return;
+    }
+
+    IntentSenderRequest intentSenderRequest = new IntentSenderRequest.Builder(pendingIntent.getIntentSender())
+        .build();
+    mResolutionRequest.launch(intentSenderRequest);
   }
 
   @Override
@@ -579,6 +598,9 @@ public enum LocationHelper implements Initializable<Context>, AppBackgroundTrack
     mPermissionRequest = mUiCallback.getActivity()
         .registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
             result -> onRequestPermissionsResult());
+    mResolutionRequest = mUiCallback.getActivity()
+        .registerForActivityResult(new ActivityResultContracts.StartIntentSenderForResult(),
+            result -> onLocationResolutionResult(result.getResultCode()));
 
     if (!Config.isScreenSleepEnabled()) {
       Utils.keepScreenOn(true, mUiCallback.getActivity().getWindow());
@@ -617,6 +639,8 @@ public enum LocationHelper implements Initializable<Context>, AppBackgroundTrack
     Utils.keepScreenOn(false, mUiCallback.getActivity().getWindow());
     mPermissionRequest.unregister();
     mPermissionRequest = null;
+    mResolutionRequest.unregister();
+    mResolutionRequest = null;
     mUiCallback = null;
   }
 
@@ -650,6 +674,18 @@ public enum LocationHelper implements Initializable<Context>, AppBackgroundTrack
     Logger.i(TAG, "Permissions have been granted");
     setLocationErrorDialogAnnoying(false);
     setStopLocationUpdateByUser(false);
+    restart();
+  }
+
+  @UiThread
+  private void onLocationResolutionResult(int resultCode)
+  {
+    if (resultCode != Activity.RESULT_OK)
+    {
+      onLocationDisabled();
+      return;
+    }
+
     restart();
   }
 
